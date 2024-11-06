@@ -1,11 +1,13 @@
 package io.chekh.keykeeper.http
 
 import cats._
+import cats.effect._
 import io.chekh.keykeeper.http.routes._
 import cats.implicits._
 import org.http4s.server._
+import org.typelevel.log4cats.Logger
 
-class HttpApi[F[_] : Monad] private {
+class HttpApi[F[_] : Concurrent : Logger] private {
   private val healthRoutes = HealthRoutes[F].routes
   private val keysRoutes = KeysRoutes[F].routes
 
@@ -15,5 +17,5 @@ class HttpApi[F[_] : Monad] private {
 }
 
 object HttpApi {
-  def apply[F[_] : Monad] = new HttpApi[F]
+  def apply[F[_] : Concurrent : Logger] = new HttpApi[F]
 }
