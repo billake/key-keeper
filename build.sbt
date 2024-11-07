@@ -26,6 +26,7 @@ lazy val server = (project in file("."))
       "io.circe" %% "circe-generic" % circeVersion,
       "com.github.tototoshi" %% "scala-csv" % scalaCsvVersion,
       "org.tpolecat" %% "doobie-core" % doobieVersion,
+      "org.tpolecat" %% "doobie-hikari" % doobieVersion,
       "org.tpolecat" %% "doobie-postgres" % doobieVersion,
       "org.typelevel" %% "log4cats-slf4j" % log4catsVersion,
       "org.slf4j" % "slf4j-simple" % slf4jVersion,

@@ -5,12 +5,17 @@ import java.util.UUID
 object key {
 
   case class Key(
-                id: UUID,
-                name: String,
-                password: String,
-                description: String,
-                created: Long,
-                deleted: Option[Long]
-                )
+                  id: UUID,
+                  keyInfo: KeyInfo,
+                  created: Long,
+                  deleted: Option[Long])
 
+  case class KeyInfo(
+                      name: String,
+                      password: String,
+                      description: String)
+
+  object KeyInfo {
+    val empty: KeyInfo = KeyInfo("", "", "")
+  }
 }
