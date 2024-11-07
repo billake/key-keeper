@@ -25,6 +25,15 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
       }
   }
 
+  // READ: GET /api/keys/lookup
+  private val lookupRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+    case GET -> Root / "lookup" / name =>
+      keys.find(name).flatMap {
+        case Nil  => NotFound(s"Record with '$name' not found.")
+        case list => Ok(list)
+      }
+  }
+
   // CREATE: POST /api/keys/create { keyInfo }
   private val createKeyRoute: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "create" =>
@@ -50,19 +59,15 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
 
   // DELETE: DELETE /api/keys/uuid
   private val deleteKeyRoute: HttpRoutes[F] = HttpRoutes.of[F] {
-    case req @ DELETE -> Root / UUIDVar(id) =>
-      keys.find(id).flatMap {
-        case Some(key) =>
+    case DELETE -> Root / UUIDVar(id) =>
           for {
             _ <- keys.delete(id)
             resp <- Ok()
           } yield resp
-        case None => NotFound(s"Cannot delete key $id not found.")
       }
-  }
 
   val routes = Router(
-    "/keys" -> (findKeyRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute)
+    "/keys" -> (findKeyRoute <+> lookupRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute)
   )
 }
 

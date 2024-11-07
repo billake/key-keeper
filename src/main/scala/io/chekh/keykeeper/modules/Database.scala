@@ -3,15 +3,16 @@ package io.chekh.keykeeper.modules
 import cats.effect._
 import doobie.hikari.HikariTransactor
 import doobie.util.ExecutionContexts
+import io.chekh.keykeeper.config.DatabaseConfig
 
 object Database {
-  def makePostgresResource[F[_] : Async]: Resource[F, HikariTransactor[F]] = for {
+  def makePostgresResource[F[_] : Async](config: DatabaseConfig): Resource[F, HikariTransactor[F]] = for {
     ec <- ExecutionContexts.fixedThreadPool(32)
     xa <- HikariTransactor.newHikariTransactor[F](
-      "org.postgresql.Driver",
-      "jdbc:postgresql:board",
-      "docker",
-      "docker",
+      config.driver,
+      config.url,
+      config.user,
+      config.pass,
       ec
     )
   } yield xa

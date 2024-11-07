@@ -2,8 +2,9 @@ package io.chekh.keykeeper
 
 import cats.effect._
 import cats.implicits._
+import io.chekh.keykeeper.config.ConfigModule
+import io.chekh.keykeeper.http._
 import io.chekh.keykeeper.modules._
-import org.http4s.ember.server.EmberServerBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -13,14 +14,11 @@ object Application extends IOApp.Simple {
 
   override def run: IO[Unit] = {
     val appResource = for {
-      xa <- Database.makePostgresResource[IO]
+      config <- ConfigModule.of[IO]()
+      xa <- Database.makePostgresResource[IO](config.applicationConfig.database)
       core <- Core[IO](xa)
-      httpAri <- HttpApi[IO](core)
-      server <- EmberServerBuilder
-        .default[IO]
-        .withHttpApp(httpAri.endpoints.orNotFound)
-        .build
-    } yield server
+      _ <- HttpModule.of[IO](config.applicationConfig.http)(core)
+    } yield ()
 
     appResource.use(_ => IO.println("Server ready!") *> IO.never)
   }

@@ -12,3 +12,6 @@ CREATE TABLE keys(
 
 ALTER TABLE keys
 ADD CONSTRAINT pk_keys PRIMARY KEY (id);
+
+CREATE INDEX index_name
+ON keys(name);

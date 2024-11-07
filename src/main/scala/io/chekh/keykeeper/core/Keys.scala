@@ -4,10 +4,13 @@ import cats._
 import cats.implicits._
 import io.chekh.keykeeper.domain.key._
 import cats.effect.MonadCancelThrow
+import io.chekh.keykeeper.logging.syntax._
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.util._
+import org.typelevel.log4cats.Logger
+
 import java.util.UUID
 
 trait Keys[F[_]] {
@@ -15,11 +18,13 @@ trait Keys[F[_]] {
   // "CRUD"
   def find(id: UUID): F[Option[Key]]
 
+  def find(name: String): F[List[Key]]
+
   def create(keyInfo: KeyInfo): F[UUID]
 
   def update(id: UUID, keyInfo: KeyInfo): F[Option[Key]]
 
-  def delete(id: UUID): F[Int]
+  def delete(id: UUID): F[Either[String ,Unit]]
 }
 
 /*
@@ -31,7 +36,7 @@ created: Long,
 deleted: Option[Long]
 */
 
-class LiveKeys[F[_] : MonadCancelThrow] private(xa: Transactor[F]) extends Keys[F] {
+class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) extends Keys[F] {
 
   override def find(id: UUID): F[Option[Key]] =
   sql"""
@@ -48,6 +53,22 @@ class LiveKeys[F[_] : MonadCancelThrow] private(xa: Transactor[F]) extends Keys[
       .query[Key]
       .option
       .transact(xa)
+
+  override def find(name: String): F[List[Key]] =
+    sql"""
+       SELECT
+         id,
+         name,
+         password,
+         description,
+         created,
+         deleted
+       FROM keys
+       WHERE name ILIKE ${"%" + name + "%"}
+       """
+      .query[Key]
+      .to[List]
+      .transact(xa).logError(e => s"Something wrong: $e")
 
   override def create(keyInfo: KeyInfo): F[UUID] =
     sql"""
@@ -83,7 +104,7 @@ class LiveKeys[F[_] : MonadCancelThrow] private(xa: Transactor[F]) extends Keys[
       .transact(xa)
       .flatMap(_ => find(id)) // return the updated key
 
-  override def delete(id: UUID): F[Int] =
+  override def delete(id: UUID): F[Either[String ,Unit]] =
     sql"""
        DELETE FROM keys
        WHERE id = ${id}
@@ -91,6 +112,11 @@ class LiveKeys[F[_] : MonadCancelThrow] private(xa: Transactor[F]) extends Keys[
       .update
       .run
       .transact(xa)
+      .map{
+        case 1 => Right(())
+        case 0 => Left("Not Found!")
+        case _ => Left("Deleted more than one keys!")
+      }
 }
 
 object LiveKeys {
@@ -124,6 +150,6 @@ object LiveKeys {
       )
   }
 
-  def apply[F[_]: MonadCancelThrow](xa: Transactor[F]): F[LiveKeys[F]] = new LiveKeys[F](xa).pure[F] // ???
+  def apply[F[_]: MonadCancelThrow : Logger](xa: Transactor[F]): F[LiveKeys[F]] = new LiveKeys[F](xa).pure[F] // ???
 }
 

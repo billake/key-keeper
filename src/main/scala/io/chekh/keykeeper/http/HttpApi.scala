@@ -1,8 +1,9 @@
-package io.chekh.keykeeper.modules
+package io.chekh.keykeeper.http
 
 import cats.effect._
 import cats.implicits._
 import io.chekh.keykeeper.http.routes._
+import io.chekh.keykeeper.modules.Core
 import org.http4s.server._
 import org.typelevel.log4cats.Logger
 

@@ -1,8 +1,5 @@
 {
-  "id": "9c946d3a-6b36-475c-9e41-95b19e2ade8c",
-  "name": "Gos",
-  "password": "Gos_123",
-  "description": "gos platform",
-  "created": 123,
-  "deleted": null
+  "name": "Gos_plus",
+  "password": "Gos_123_plus",
+  "description": "gos platform_plus"
 }
