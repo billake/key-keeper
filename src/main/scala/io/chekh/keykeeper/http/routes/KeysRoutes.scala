@@ -1,16 +1,15 @@
 package io.chekh.keykeeper.http.routes
 
 import io.chekh.keykeeper.logging.syntax._
+import io.chekh.keykeeper.domain.key._
+import io.chekh.keykeeper.http.responses._
 import io.circe.generic.auto._
 import org.http4s.circe.CirceEntityCodec._
-import io.chekh.keykeeper.domain.key._
-import cats._
 import cats.implicits._
 import cats.effect._
 import org.http4s._
 import io.chekh.keykeeper.core._
 import org.http4s.dsl._
-import org.http4s.dsl.impl._
 import org.http4s.server._
 import org.typelevel.log4cats.Logger
 
@@ -21,7 +20,7 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
     case GET -> Root / UUIDVar(id) =>
       keys.find(id).flatMap {
         case Some(key) => Ok(key)
-        case None      => NotFound(s"Record $id not found.")
+        case None      => NotFound(FailureResponse(s"Record $id not found."))
       }
   }
 
@@ -29,7 +28,7 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
   private val lookupRoute: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "lookup" / name =>
       keys.find(name).flatMap {
-        case Nil  => NotFound(s"Record with '$name' not found.")
+        case Nil  => NotFound(FailureResponse(s"Record with '$name' not found."))
         case list => Ok(list)
       }
   }
@@ -39,8 +38,8 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
     case req @ POST -> Root / "create" =>
       for {
         keyInfo <- req.as[KeyInfo].logError(e => s"Parsing payload failed: $e")
-        keyId <- keys.create(keyInfo)
-        resp <- Created(keyId)
+        keyId   <- keys.create(keyInfo)
+        resp    <- Created(keyId)
       } yield resp
   }
 
@@ -52,7 +51,7 @@ class KeysRoutes[F[_] : Concurrent : Logger] private (keys: Keys[F]) extends Htt
             maybeNewKey <- keys.update(id, keyInfo)
             resp <- maybeNewKey match {
               case Some(_) => Ok()
-              case None => NotFound(s"Cannot update key $id not found.")
+              case None => NotFound(FailureResponse(s"Cannot update key $id not found."))
           }
       } yield resp
   }

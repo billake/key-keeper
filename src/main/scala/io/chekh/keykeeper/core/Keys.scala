@@ -1,10 +1,10 @@
 package io.chekh.keykeeper.core
 
-import cats._
 import cats.implicits._
-import io.chekh.keykeeper.domain.key._
-import cats.effect.MonadCancelThrow
 import io.chekh.keykeeper.logging.syntax._
+import io.chekh.keykeeper.domain.key._
+import io.chekh.keykeeper.http.responses._
+import cats.effect.MonadCancelThrow
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import doobie.postgres.implicits._
@@ -24,7 +24,7 @@ trait Keys[F[_]] {
 
   def update(id: UUID, keyInfo: KeyInfo): F[Option[Key]]
 
-  def delete(id: UUID): F[Either[String ,Unit]]
+  def delete(id: UUID): F[Either[FailureResponse, Unit]]
 }
 
 /*
@@ -104,7 +104,7 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
       .transact(xa)
       .flatMap(_ => find(id)) // return the updated key
 
-  override def delete(id: UUID): F[Either[String ,Unit]] =
+  override def delete(id: UUID): F[Either[FailureResponse, Unit]] =
     sql"""
        DELETE FROM keys
        WHERE id = ${id}
@@ -114,8 +114,8 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
       .transact(xa)
       .map{
         case 1 => Right(())
-        case 0 => Left("Not Found!")
-        case _ => Left("Deleted more than one keys!")
+        case 0 => Left(FailureResponse("Key not Found!"))
+        case _ => Left(FailureResponse("Deleted more than one keys!"))
       }
 }
 

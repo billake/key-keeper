@@ -16,7 +16,4 @@ object HttpModule {
       .withHttpApp(httpApi.endpoints.orNotFound)
       .build
   } yield ()
-
 }
-
-
