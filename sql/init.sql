@@ -6,8 +6,8 @@ CREATE TABLE keys(
     name text NOT NULL,
     password text NOT NULL,
     description text NOT NULL,
-    created TIMESTAMP DEFAULT now(),
-    deleted TIMESTAMP DEFAULT NULL
+    created bigint NOT NULL,
+    deleted bigint DEFAULT NULL
 );
 
 ALTER TABLE keys
