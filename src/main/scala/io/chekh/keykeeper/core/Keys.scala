@@ -3,13 +3,14 @@ package io.chekh.keykeeper.core
 import cats.implicits._
 import io.chekh.keykeeper.logging.syntax._
 import io.chekh.keykeeper.domain.key._
-import io.chekh.keykeeper.http.responses._
 import cats.effect.MonadCancelThrow
 import doobie.util.transactor.Transactor
 import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.util._
+import doobie.util.update._
 import org.typelevel.log4cats.Logger
+import fs2.Stream
 
 import java.util.UUID
 
@@ -24,6 +25,10 @@ trait Keys[F[_]] {
   def update(id: UUID, keyInfo: KeyInfo): F[Option[Key]]
 
   def delete(id: UUID): F[Int]
+
+  def findAll(): Stream[F, Key]
+
+  def createMany(infos: List[KeyInfo]): Stream[F, UUID]
 }
 
 class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) extends Keys[F] {
@@ -102,6 +107,36 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
       .update
       .run
       .transact(xa)
+
+  override def findAll(): Stream[F, Key] = {
+    sql"""
+      SELECT
+        id,
+        name,
+        password,
+        description,
+        created,
+        deleted
+      FROM keys
+      """
+      .query[Key]
+      .stream
+      .transact(xa)
+  }
+
+  override def createMany(infos: List[KeyInfo]): Stream[F, UUID] = {
+    val sql = """
+    INSERT INTO keys (
+      name,
+      password,
+      description
+    ) VALUES (?, ?, ?)
+    """
+    Update[KeyInfo](sql)
+      .updateManyWithGeneratedKeys[UUID]("id")(infos)
+      .transact(xa)
+  }
+
 }
 
 object LiveKeys {

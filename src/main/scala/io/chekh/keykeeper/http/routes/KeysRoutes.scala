@@ -11,9 +11,31 @@ import org.http4s._
 import io.chekh.keykeeper.core._
 import org.http4s.dsl._
 import org.http4s.server._
+import org.http4s.headers._
 import org.typelevel.log4cats.Logger
+import fs2.Stream
+import fs2.data.csv._
+import org.typelevel.ci._
+import scala.concurrent.duration._
 
-class KeysRoutes[F[_] : Concurrent : Logger] private(keys: Keys[F]) extends Http4sDsl[F] {
+
+class KeysRoutes[F[_] : Concurrent : Logger : Temporal] private(keys: Keys[F]) extends Http4sDsl[F] {
+
+  // EXPORT: GET /api/keys/export/csv
+  private val exportCsvRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+    case GET -> Root / "export" / "csv" =>
+      Ok(exportAllToCsv).map(
+      _.putHeaders(
+      `Content-Type`(MediaType.text.csv),
+      `Content-Disposition`("attachment", Map(CIString("filename") -> "keys.csv")))
+    )
+  }
+
+  private def exportAllToCsv: Stream[F, Byte] = {
+    keys.findAll()
+      .through(encodeWithoutHeaders[Key].apply[F]())
+      .through(fs2.text.utf8.encode)
+  }
 
   // READ: GET /api/keys/uuid
   private val findKeyRoute: HttpRoutes[F] = HttpRoutes.of[F] {
@@ -35,7 +57,7 @@ class KeysRoutes[F[_] : Concurrent : Logger] private(keys: Keys[F]) extends Http
 
   // CREATE: POST /api/keys/create { keyInfo }
   private val createKeyRoute: HttpRoutes[F] = HttpRoutes.of[F] {
-    case req@POST -> Root / "create" =>
+    case req @ POST -> Root / "create" =>
       for {
         keyInfo <- req.as[KeyInfo].logError(e => s"Parsing payload failed: $e")
         keyId   <- keys.create(keyInfo)
@@ -67,10 +89,10 @@ class KeysRoutes[F[_] : Concurrent : Logger] private(keys: Keys[F]) extends Http
   }
 
   val routes = Router(
-    "/keys" -> (findKeyRoute <+> lookupRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute)
+    "/keys" -> (findKeyRoute <+> lookupRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute <+> exportCsvRoute)
   )
 }
 
 object KeysRoutes {
-  def apply[F[_] : Concurrent : Logger](keys: Keys[F]) = new KeysRoutes[F](keys)
+  def apply[F[_] : Concurrent : Logger : Temporal](keys: Keys[F]) = new KeysRoutes[F](keys)
 }

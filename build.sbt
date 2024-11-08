@@ -12,6 +12,8 @@ lazy val logbackVersion = "1.4.0"
 lazy val slf4jVersion = "2.0.0"
 lazy val scalaTestVersion = "3.2.12"
 lazy val pureconfigVersion = "0.17.7"
+lazy val fs2Version = "3.2.4"
+lazy val fs2DataCsvVersion = "1.11.1"
 
 lazy val server = (project in file("."))
   .settings(
@@ -22,6 +24,8 @@ lazy val server = (project in file("."))
       "org.http4s" %% "http4s-dsl" % http4sVersion,
       "org.http4s" %% "http4s-ember-server" % http4sVersion,
       "org.http4s" %% "http4s-circe" % http4sVersion,
+      "co.fs2" %% "fs2-core" % fs2Version,
+      "org.gnieh" %% "fs2-data-csv-generic" % fs2DataCsvVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-http4s-server" % tapirVersion,
       "io.circe" %% "circe-generic" % circeVersion,
