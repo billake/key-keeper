@@ -7,7 +7,7 @@ import io.chekh.keykeeper.modules.Core
 import org.http4s.server._
 import org.typelevel.log4cats.Logger
 
-class HttpApi[F[_] : Concurrent : Logger] private (core: Core[F]) {
+class HttpApi[F[_] : Concurrent : Logger] private(core: Core[F]) {
 
   private val healthRoutes = HealthRoutes[F].routes
   private val keysRoutes = KeysRoutes[F](core.keys).routes

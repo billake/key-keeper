@@ -15,7 +15,6 @@ import java.util.UUID
 
 trait Keys[F[_]] {
   // "algebra"
-  // "CRUD"
   def find(id: UUID): F[Option[Key]]
 
   def find(name: String): F[List[Key]]
@@ -24,48 +23,39 @@ trait Keys[F[_]] {
 
   def update(id: UUID, keyInfo: KeyInfo): F[Option[Key]]
 
-  def delete(id: UUID): F[Either[FailureResponse, Unit]]
+  def delete(id: UUID): F[Int]
 }
-
-/*
-id: UUID,
-name: String,
-password: String,
-description: String,
-created: Long,
-deleted: Option[Long]
-*/
 
 class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) extends Keys[F] {
 
   override def find(id: UUID): F[Option[Key]] =
-  sql"""
-       SELECT
-         id,
-         name,
-         password,
-         description,
-         created,
-         deleted
-       FROM keys
-       WHERE id = $id
-       """
+    sql"""
+      SELECT
+        id,
+        name,
+        password,
+        description,
+        created,
+        deleted
+      FROM keys
+      WHERE id = $id
+      """
       .query[Key]
       .option
       .transact(xa)
 
   override def find(name: String): F[List[Key]] =
     sql"""
-       SELECT
-         id,
-         name,
-         password,
-         description,
-         created,
-         deleted
-       FROM keys
-       WHERE name ILIKE ${"%" + name + "%"}
-       """
+      SELECT
+        id,
+        name,
+        password,
+        description,
+        created,
+        deleted
+      FROM keys
+      WHERE name ILIKE ${"%" + name + "%"}
+      """
       .query[Key]
       .to[List]
       .transact(xa).logError(e => s"Something wrong: $e")
@@ -92,31 +82,26 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
 
   override def update(id: UUID, keyInfo: KeyInfo): F[Option[Key]] =
     sql"""
-       UPDATE keys
-       SET
+      UPDATE keys
+      SET
         name = ${keyInfo.name},
         password = ${keyInfo.password},
         description = ${keyInfo.description}
-       WHERE id = ${id}
-       """
+      WHERE id = ${id}
+      """
       .update
       .run
       .transact(xa)
       .flatMap(_ => find(id)) // return the updated key
 
-  override def delete(id: UUID): F[Either[FailureResponse, Unit]] =
+  override def delete(id: UUID): F[Int] =
     sql"""
-       DELETE FROM keys
-       WHERE id = ${id}
-       """
+      DELETE FROM keys
+      WHERE id = ${id}
+      """
       .update
       .run
       .transact(xa)
-      .map{
-        case 1 => Right(())
-        case 0 => Left(FailureResponse("Key not Found!"))
-        case _ => Left(FailureResponse("Deleted more than one keys!"))
-      }
 }
 
 object LiveKeys {
@@ -150,6 +135,6 @@ object LiveKeys {
       )
   }
 
-  def apply[F[_]: MonadCancelThrow : Logger](xa: Transactor[F]): F[LiveKeys[F]] = new LiveKeys[F](xa).pure[F] // ???
+  def apply[F[_]: MonadCancelThrow : Logger](xa: Transactor[F]): F[LiveKeys[F]] = new LiveKeys[F](xa).pure[F]
 }
 

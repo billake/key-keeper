@@ -15,11 +15,12 @@ object Application extends IOApp.Simple {
   override def run: IO[Unit] = {
     val appResource = for {
       config <- ConfigModule.of[IO]()
-      xa <- Database.makePostgresResource[IO](config.applicationConfig.database)
-      core <- Core[IO](xa)
-      _ <- HttpModule.of[IO](config.applicationConfig.http)(core)
+      xa     <- Database.makePostgresResource[IO](config.applicationConfig.database)
+      core   <- Core[IO](xa)
+      _      <- HttpModule.of[IO](config.applicationConfig.http)(core)
     } yield ()
 
     appResource.use(_ => IO.println("Server ready!") *> IO.never)
   }
+
 }

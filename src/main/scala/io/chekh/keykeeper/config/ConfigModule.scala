@@ -10,7 +10,6 @@ trait ConfigModule {
 }
 
 object ConfigModule {
-
   def of[F[_] : Sync](): Resource[F, ConfigModule] =
     Resource.eval(
       Sync[F].delay(
@@ -21,5 +20,4 @@ object ConfigModule {
         }
       }
     )
-
 }

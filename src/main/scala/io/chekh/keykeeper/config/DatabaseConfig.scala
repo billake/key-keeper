@@ -4,4 +4,5 @@ final case class DatabaseConfig(
    driver: String,
    url: String,
    user: String,
-   pass: String)
+   pass: String,
+   nThreads: Int)
