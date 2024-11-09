@@ -11,6 +11,7 @@ lazy val log4catsVersion = "2.4.0"
 lazy val logbackVersion = "1.4.0"
 lazy val slf4jVersion = "2.0.0"
 lazy val scalaTestVersion = "3.2.12"
+lazy val scalaTestCatsEffectVersion = "1.4.0"
 lazy val pureconfigVersion = "0.17.7"
 lazy val fs2Version = "3.2.4"
 lazy val fs2DataCsvVersion = "1.11.1"
@@ -38,7 +39,8 @@ lazy val server = (project in file("."))
       "org.typelevel" %% "log4cats-slf4j" % log4catsVersion,
       "org.slf4j" % "slf4j-simple" % slf4jVersion,
       "org.typelevel" %% "log4cats-noop" % log4catsVersion % Test,
+      "ch.qos.logback" % "logback-classic" % logbackVersion % Test,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-      "ch.qos.logback" % "logback-classic" % logbackVersion % Test
+      "org.typelevel" %% "cats-effect-testing-scalatest" % scalaTestCatsEffectVersion % Test
     )
   )

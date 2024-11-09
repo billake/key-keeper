@@ -3,16 +3,20 @@
 ### Run app
 
 #### Postgresql:
-1) > docker-compose up
+1) > key-keeper % docker-compose up
 
 ##### Ember server:
-1) > sbt 
-2) > run io.chekh.keykeeper.Application
+1) > key-keeper % sbt 
+2) > sbt:key-keeper> run io.chekh.keykeeper.Application
    
 ##### Query keys table via psql:
-1) > docker exec -it key-keeper-db-1 psql -U docker
+1) > key-keeper % docker exec -it key-keeper-db-1 psql -U docker
 2) > \c board;
 3) > select * from keys;
+
+### Run tests
+1) > key-keeper % sbt
+2) > sbt:key-keeper> test
 
 ### HTTP requests.
 
