@@ -16,19 +16,32 @@ import org.typelevel.log4cats.Logger
 import fs2.Stream
 import fs2.data.csv._
 import org.typelevel.ci._
+
 import scala.concurrent.duration._
 
-
 class KeysRoutes[F[_] : Concurrent : Logger : Temporal] private(keys: Keys[F]) extends Http4sDsl[F] {
+
+  // IMPORT: POST /api/keys/import { file }
+  private val importFromCsvRoute: HttpRoutes[F] = HttpRoutes.of[F] {
+    case req @ POST -> Root / "import" =>
+      val stream = req.body
+      .through(fs2.text.utf8.decode)
+      .through(decodeWithoutHeaders[KeyInfo].apply[F, String]())
+      .metered(1000.millis) // apply to see streaming ongoing
+      .groupWithin(1000, 3.second) // sql batch insert limit. Use low size value and time value to see process ongoing
+      .flatMap(rows => keys.createMany(rows.toList))
+      .flatMap(generateUUID => Stream.emits((generateUUID.toString + "\n").getBytes))
+      Ok(stream)
+  }
 
   // EXPORT: GET /api/keys/export/csv
   private val exportCsvRoute: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "export" / "csv" =>
       Ok(exportAllToCsv).map(
-      _.putHeaders(
-      `Content-Type`(MediaType.text.csv),
-      `Content-Disposition`("attachment", Map(CIString("filename") -> "keys.csv")))
-    )
+        _.putHeaders(
+          `Content-Type`(MediaType.text.csv),
+          `Content-Disposition`("attachment", Map(CIString("filename") -> "keys.csv")))
+      )
   }
 
   private def exportAllToCsv: Stream[F, Byte] = {
@@ -46,7 +59,7 @@ class KeysRoutes[F[_] : Concurrent : Logger : Temporal] private(keys: Keys[F]) e
       }
   }
 
-  // READ: GET /api/keys/lookup
+  // READ: GET /api/keys/lookup/name
   private val lookupRoute: HttpRoutes[F] = HttpRoutes.of[F] {
     case GET -> Root / "lookup" / name =>
       keys.find(name).flatMap {
@@ -89,7 +102,7 @@ class KeysRoutes[F[_] : Concurrent : Logger : Temporal] private(keys: Keys[F]) e
   }
 
   val routes = Router(
-    "/keys" -> (findKeyRoute <+> lookupRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute <+> exportCsvRoute)
+    "/keys" -> (findKeyRoute <+> lookupRoute <+> createKeyRoute <+> updateKeyRoute <+> deleteKeyRoute <+> exportCsvRoute <+> importFromCsvRoute)
   )
 }
 

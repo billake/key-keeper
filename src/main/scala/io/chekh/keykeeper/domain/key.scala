@@ -1,17 +1,18 @@
 package io.chekh.keykeeper.domain
 
 import cats.data._
-import java.util.UUID
 import cats.implicits._
 import fs2.data.csv._
+import java.util.UUID
+import java.time.LocalDateTime
 
 object key {
 
   final case class Key(
                         id: UUID,
                         keyInfo: KeyInfo,
-                        created: Long,
-                        deleted: Option[Long])
+                        created: LocalDateTime,
+                        deleted: Option[LocalDateTime])
 
 
   object Key {
@@ -38,7 +39,7 @@ object key {
     implicit val keyRowDecoder: RowDecoder[KeyInfo] = RowDecoder.instance[KeyInfo] { row =>
       row.values.toList match {
         case List(name, password, description) => KeyInfo(name, password, description).asRight
-        case _ => new DecoderError("Illegal number of elements").asLeft[KeyInfo]
+        case l => new DecoderError(s"Illegal number of elements $l").asLeft[KeyInfo]
       }
     }
   }

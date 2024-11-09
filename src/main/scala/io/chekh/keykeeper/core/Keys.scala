@@ -12,6 +12,7 @@ import doobie.util.update._
 import org.typelevel.log4cats.Logger
 import fs2.Stream
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 trait Keys[F[_]] {
@@ -70,15 +71,11 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
       INSERT INTO keys (
         name,
         password,
-        description,
-        created,
-        deleted
+        description
       ) VALUES (
         ${keyInfo.name},
         ${keyInfo.password},
-        ${keyInfo.description},
-        ${System.currentTimeMillis()},
-        NULL
+        ${keyInfo.description}
       )
       """
       .update
@@ -136,7 +133,6 @@ class LiveKeys[F[_] : MonadCancelThrow : Logger] private(xa: Transactor[F]) exte
       .updateManyWithGeneratedKeys[UUID]("id")(infos)
       .transact(xa)
   }
-
 }
 
 object LiveKeys {
@@ -146,8 +142,8 @@ object LiveKeys {
         String,
         String,
         String,
-        Long,
-        Option[Long]
+        LocalDateTime,
+        Option[LocalDateTime]
       )
   ].map {
     case (
@@ -155,8 +151,8 @@ object LiveKeys {
       name: String,
       password: String,
       description: String,
-      created: Long,
-      deleted: Option[Long]
+      created: LocalDateTime,
+      deleted: Option[LocalDateTime]
       ) =>
       Key(
         id = id,
