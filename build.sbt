@@ -15,6 +15,7 @@ lazy val scalaTestCatsEffectVersion = "1.4.0"
 lazy val pureconfigVersion = "0.17.7"
 lazy val fs2Version = "3.2.4"
 lazy val fs2DataCsvVersion = "1.11.1"
+lazy val testContainerVersion = "1.17.3"
 
 lazy val server = (project in file("."))
   .settings(
@@ -41,6 +42,8 @@ lazy val server = (project in file("."))
       "org.typelevel" %% "log4cats-noop" % log4catsVersion % Test,
       "ch.qos.logback" % "logback-classic" % logbackVersion % Test,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-      "org.typelevel" %% "cats-effect-testing-scalatest" % scalaTestCatsEffectVersion % Test
+      "org.typelevel" %% "cats-effect-testing-scalatest" % scalaTestCatsEffectVersion % Test,
+      "org.testcontainers" % "testcontainers" % testContainerVersion % Test,
+      "org.testcontainers" % "postgresql" % testContainerVersion % Test
     )
   )

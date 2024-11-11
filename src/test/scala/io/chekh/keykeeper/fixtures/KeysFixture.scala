@@ -10,6 +10,8 @@ object KeysFixture {
 
   val CustomCreatedTime = LocalDateTime.parse("2024-11-09T12:00:00", DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
+  val NotFoundKeyUuid = UUID.fromString("a9ec8f5e-2b60-4d54-add7-000000000000")
+
   val SomeKeyUuid = UUID.fromString("a9ec8f5e-2b60-4d54-add7-d7e87a673d7a")
 
   val SomeKey = Key(
@@ -34,6 +36,12 @@ object KeysFixture {
     ),
     CustomCreatedTime,
     None
+  )
+
+  val NewSomeKey = KeyInfo(
+      "new_some_key_name",
+      "new_some_key_password_123",
+      "new_some_key_description"
   )
 
 }
