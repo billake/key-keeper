@@ -1,7 +1,6 @@
 package io.chekh.keykeeper.http.routes
 
 import cats.effect._
-import cats.implicits._
 import cats.effect.testing.scalatest.AsyncIOSpec
 import io.circe.generic.auto._
 import io.chekh.keykeeper.core._

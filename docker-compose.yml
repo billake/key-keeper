@@ -9,3 +9,20 @@ services:
       - "POSTGRES_PASSWORD=docker"
     ports:
       - "5432:5432"
+    networks:
+      - keykeeper-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    networks:
+      - keykeeper-network
+
+networks:
+  keykeeper-network:
+    driver: bridge

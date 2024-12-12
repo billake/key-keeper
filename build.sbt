@@ -1,4 +1,5 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
+lazy val appName = "key-keeper"
 
 lazy val scala2Version = "2.13.15"
 lazy val catsEffectVersion = "3.3.14"
@@ -19,7 +20,7 @@ lazy val testContainerVersion = "1.17.3"
 
 lazy val server = (project in file("."))
   .settings(
-    name := "key-keeper",
+    name := appName,
     scalaVersion := scala2Version,
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect" % catsEffectVersion,
@@ -47,3 +48,11 @@ lazy val server = (project in file("."))
       "org.testcontainers" % "postgresql" % testContainerVersion % Test
     )
   )
+
+assembly / test := {}
+assembly / assemblyJarName  := s"$appName.jar"
+assembly / assemblyMergeStrategy := {
+  case PathList("reference.conf") => MergeStrategy.concat
+  case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}
