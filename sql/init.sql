@@ -1,3 +1,5 @@
+\c postgres;
+DROP DATABASE IF EXISTS board;
 CREATE DATABASE board;
 \c board;
 
