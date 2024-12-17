@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: key-keeper
 spec:
-  replicas: 1
+  replicas: 5
   selector:
     matchLabels:
       app: key-keeper
@@ -17,8 +17,8 @@ spec:
           image: qbchak/key-keeper:0.1.4-SNAPSHOT
           resources:
             limits:
-              memory: "128Mi"
-              cpu: "250m"
+              memory: "256Mi"
+              cpu: "500m"
           ports:
             - containerPort: 8080
       imagePullSecrets:
