@@ -1,12 +1,13 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: key-keeper
 spec:
-  replicas: 5
   selector:
     matchLabels:
       app: key-keeper
+  replicas: 3
   template:
     metadata:
       labels:
@@ -14,12 +15,28 @@ spec:
     spec:
       containers:
         - name: key-keeper
-          image: qbchak/key-keeper:0.1.4-SNAPSHOT
+          image: qbchak/key-keeper:0.1.5-SNAPSHOT
+          ports:
+            - containerPort: 8080
           resources:
             limits:
               memory: "256Mi"
               cpu: "500m"
-          ports:
-            - containerPort: 8080
       imagePullSecrets:
         - name: docker-hub-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: key-keeper
+  labels:
+    app: key-keeper
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: key-keeper
