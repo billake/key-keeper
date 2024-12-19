@@ -4,18 +4,35 @@ on:
     branches: [ main ]
   push:
     branches: [ main ]
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
           cache: sbt
+
       - uses: sbt/setup-sbt@v1
+        with:
+          sbt-version: 1.10.1
+
+      - name: Cache SBT dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+            ~/.coursier
+          key: sbt-${{ runner.os }}-${{ hashFiles('**/*.sbt') }}
+          restore-keys: |
+            sbt-${{ runner.os }}-
+
       - name: Build and test
         shell: bash
-        run: sbt -v +test
+        run: sbt -v test
