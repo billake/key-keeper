@@ -18,10 +18,9 @@ jobs:
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
         run: |
-          echo "$KUBECONFIG" | base64 -d > kubeconfig.yaml 
-          cat kubeconfig.yaml 
-          export KUBECONFIG=$(pwd)/kubeconfig.yaml 
-          kubectl config view 
+          echo "$KUBECONFIG" | base64 -d > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+          kubectl config use-context minikube
       - name: Update Kubernetes Deployment Image
         run: |
           kubectl set image deployment/key-keeper \
