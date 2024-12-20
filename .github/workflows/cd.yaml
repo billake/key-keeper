@@ -22,7 +22,6 @@ jobs:
           cat kubeconfig.yaml 
           export KUBECONFIG=$(pwd)/kubeconfig.yaml 
           kubectl config view 
-          kubectl cluster-info
       - name: Update Kubernetes Deployment Image
         run: |
           kubectl set image deployment/key-keeper \
