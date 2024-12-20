@@ -1,4 +1,4 @@
-ThisBuild / version := "0.1.5-SNAPSHOT"
+ThisBuild / version := "1.0.0"
 lazy val appName = "key-keeper"
 
 lazy val scala2Version = "2.13.15"
