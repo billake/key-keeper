@@ -20,7 +20,9 @@ jobs:
           cache: sbt
       - uses: sbt/setup-sbt@v1
       - name: Build and Test
-        run: sbt -v +test
+        run: |
+          sbt -v +test
+          sbt -v assembly
   build_docker_images:
     name: Build Docker Images
     runs-on: ubuntu-latest
@@ -34,8 +36,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build the project
-        run: sbt -v +assembly
       - name: Build and tag Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest .
