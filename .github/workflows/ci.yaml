@@ -48,8 +48,14 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and tag Docker image
         run: |
+          GIT_TAG=$(git describe --tags --always)
           docker build -t ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:$GIT_TAG
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:$GIT_TAG
       - name: Remove the local image
-        run: docker rmi ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
+        run: |
+          docker rmi ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
+          docker rmi ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:$GIT_TAG
