@@ -9,12 +9,17 @@ jobs:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
     steps:
+      - name: Install kubectl
       - uses: azure/setup-kubectl@v4
         with:
           version: latest
         id: install
       - name: Configure kubectl
-        run: kubectl config use-context minikube
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          echo "$KUBECONFIG" | base64 -d > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
       - name: Update Kubernetes Deployment Image
         run: |
           kubectl set image deployment/key-keeper \
