@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: key-keeper
-          image: qbchak/key-keeper:0.1.5-SNAPSHOT
+          image: qbchak/key-keeper:latest
           ports:
             - containerPort: 8080
           resources:
