@@ -1,7 +1,6 @@
 package io.chekh.keykeeper
 
 import cats.effect._
-import cats.implicits._
 import io.chekh.keykeeper.config.ConfigModule
 import io.chekh.keykeeper.http._
 import io.chekh.keykeeper.modules._
