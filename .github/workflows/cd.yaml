@@ -14,6 +14,7 @@ jobs:
         with:
           version: latest
         id: install
+      - name: Update Kubernetes Deployment Image
         run: |
           kubectl set image deployment/key-keeper \
           key-keeper=${{ secrets.DOCKER_USERNAME }}/key-keeper:latest
