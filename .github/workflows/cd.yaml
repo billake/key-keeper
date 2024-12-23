@@ -10,13 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install kubectl
-        uses: azure/setup-kubectl@v4
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
         with:
-          version: latest
-        id: install
-      - name: Update Kubernetes Deployment Image
-        run: |
-          kubectl set image deployment/key-keeper \
-          key-keeper=${{ secrets.DOCKER_USERNAME }}/key-keeper:latest
-      - name: Verify Deployment
-        run: kubectl rollout status deployment/key-keeper
+          args: get pods
