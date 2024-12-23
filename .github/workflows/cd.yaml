@@ -14,14 +14,6 @@ jobs:
         with:
           version: latest
         id: install
-      - name: Configure kubectl
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-        run: |
-          echo "$KUBECONFIG" | base64 -d > kubeconfig.yaml
-          export KUBECONFIG=$(pwd)/kubeconfig.yaml
-          kubectl config use-context minikube
-      - name: Update Kubernetes Deployment Image
         run: |
           kubectl set image deployment/key-keeper \
           key-keeper=${{ secrets.DOCKER_USERNAME }}/key-keeper:latest
