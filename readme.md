@@ -1,5 +1,18 @@
 # key-keeper
 
+### Stack
+- cats effect
+- http4s
+- fs2
+- doobie
+- circe
+- tapir
+- pureconfig
+- log4cats
+- logback
+- testcontainers
+- scalatest
+
 ### Run app
 
 #### Postgresql:
